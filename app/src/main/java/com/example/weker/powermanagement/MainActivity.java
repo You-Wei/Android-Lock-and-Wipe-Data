@@ -15,10 +15,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    private Button lock;
-    private Button enable;
-    private Button disable;
-    static final int RESULT_ENABLE = 1;
+    static final int ADMIN_INTENT = 15;
 
     DevicePolicyManager deviceManager;
     ActivityManager activityManager;
@@ -31,17 +28,19 @@ public class MainActivity extends Activity implements OnClickListener {
 
         deviceManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        compName = new ComponentName(this, MyAdmin.class);
+        compName = new ComponentName(this, MyAdminReceiver.class);
 
         setContentView(R.layout.activity_main);
-
         Button lock = (Button) findViewById(R.id.lock);
         lock.setOnClickListener(this);
 
         Button disable = (Button) findViewById(R.id.disable);
         Button enable = (Button) findViewById(R.id.enable);
+        Button hardReset = (Button) findViewById(R.id.hardReset);
         disable.setOnClickListener(this);
         enable.setOnClickListener(this);
+        hardReset.setOnClickListener(this);
+
     }
 
     @Override
@@ -60,19 +59,29 @@ public class MainActivity extends Activity implements OnClickListener {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "enabled");
-            startActivityForResult(intent, RESULT_ENABLE);
+            startActivityForResult(intent, ADMIN_INTENT);
             break;
 
             case R.id.disable:
             deviceManager.removeActiveAdmin(compName);
             Toast.makeText(getApplicationContext(), "Admin registration removed", Toast.LENGTH_SHORT).show();
             break;
+
+            case R.id.hardReset:
+            boolean yes = deviceManager.isAdminActive(compName);
+            if (yes) {
+                deviceManager.wipeData(0);
+            }else{
+                Toast.makeText(getApplicationContext(), "Not Registered as admin", Toast.LENGTH_SHORT).show();
+            }
+            break;
+
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == RESULT_ENABLE) {
+        if (requestCode == ADMIN_INTENT) {
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(getApplicationContext(), "Registered As Admin", Toast.LENGTH_SHORT).show();
                 } else {

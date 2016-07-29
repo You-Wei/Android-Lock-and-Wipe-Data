@@ -40,6 +40,11 @@ public class MyAdmin extends DeviceAdminReceiver{
         }
 
         @Override
+        public CharSequence onDisableRequested(Context context, Intent intent) {
+        return "This is an optional message to warn the user about disabling.";
+        }
+
+        @Override
         public void onPasswordFailed(Context context, Intent intent) {
             showToast(context, "Sample Device Admin: pw failed");
         }
